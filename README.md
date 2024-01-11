@@ -40,15 +40,18 @@ You can subscribe the same topic for using 'Commands' by 'udpsub'  and using 'Be
 Both subscriptions exist independently of each other.
 This also applies to unsubscribing to a topic.
 
-A rule example
+### A 'rule' example
 
-This rule writes the payload of received UDP-message of topic 'SM.PowerAV' to 'var1'
-```
+This rule on Controller-A writes the payload of received UDP-message of topic 'SM.PowerAV' to 'var1'
+```sh
 rule1 
   ON event#SM.PowerAV do var1 %value% ENDON 	      
 rule1 1
+```
 
-udpsub SM.PowerAV   
+Perform this on Controller-B and send an udp-broadcast message.
+```sh
+udpsub SM.PowerAV 123  
 ```
 
 
@@ -63,7 +66,6 @@ Upload following files to the Controller
 After restart of the controller and you should see following picture of the file-system.
 
 ![Alt text](images/filesystem.png)
-
 
 
 ## How to test
