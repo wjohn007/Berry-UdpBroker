@@ -1,3 +1,4 @@
+# ==================== unit-test 
 
 # creation 
 bc=UdpBroker("udBroker")
@@ -56,6 +57,36 @@ assert(tpayload==gpayload,"broker.4")
 # ---- unsubscribe
 bc.unsubscribe(gtopic)
 assert(size(bc.topics)==0,"unsubscribe.1")
+
+# ==== Tasmota Commands
+# ---- udppub
+bc.lastWarnInfo=nil
+erg = tasmota.cmd("udppub topic1")
+assert(bc.lastWarnInfo!=nil,"udppub.1")
+
+bc.lastWarnInfo=nil
+erg = tasmota.cmd("udppub topic1 123")
+assert(bc.lastWarnInfo==nil,"udppub.2")
+
+# ---- udpsub
+tasmota.cmd("udpsub topic1")
+assert(size(bc.topics)==1,"udpsub.1")
+
+# once again, info it exsits already
+tasmota.cmd("udpsub topic1")
+assert(size(bc.topics)==1,"udpsub.2")
+
+# berry subscribe is possible
+bc.subscribe("topic1",def() print("got it") end)
+assert(size(bc.topics)==2,"udpsub.3")
+
+# command unsub
+tasmota.cmd("udpunsub topic1")
+assert(size(bc.topics)==1,"udpsub.4")
+
+# berry unsub
+bc.unsubscribe("topic1")
+assert(size(bc.topics)==0,"udpsub.5")
 
 # ----- house keeping
 

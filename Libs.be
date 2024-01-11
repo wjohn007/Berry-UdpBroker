@@ -1,7 +1,7 @@
 #-----------------------------------
  dynamic class
-     add dynamically at run time members to a class.
-     refer 'virtual members' https://berry.readthedocs.io/en/latest/source/en/Chapter-8.html#module-undefined   
+     Dynamically add members to a class at runtime.
+     Refer 'virtual members' https://berry.readthedocs.io/en/latest/source/en/Chapter-8.html#module-undefined   
 ------------------------------------#
 import string
 import json
@@ -42,11 +42,10 @@ class DynClass
 end
 
 #-----------------------------------
-this class implements the Action class
-    XAction allows to bind multiple callbacks
+this class implements the XAction class
+    XAction allows to bind multiple callbacks using th '+' operator
     var action=XAction()
-    action += myCallback1
-    
+    action += myCallback1  
 ------------------------------------#
 class XAction 
 

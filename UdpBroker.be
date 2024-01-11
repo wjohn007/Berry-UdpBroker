@@ -6,10 +6,16 @@ public methods
 --------------
 
 publish(topic,value)		publish the value to the given topic
-subscribe(topic,closure)    susbscribe to a specific topic
+subscribe(topic,closure)    susbscribe to a specific topic with callback-function(topic,payload)
 unsubscribe(topic)          unsubscribe from specific topic
 deinit()                    unitialize the broker
+init(name)                  create an initialize the broker
 
+Tasmota Commands
+----------------
+udppub <topic> <payload>    publish a message with topic/payload
+udpsub <topic>              subscribe for a topic; on receive perfrom command : event <topic>=<payload>
+udpunsub <topic>            unsubscribe topic
 
 -----------------------------------#
 import string
@@ -19,9 +25,9 @@ import undefined
 class UdpTopic
     var topic
     var closure
+    var isCmd
 end	
 
-#------  the PwmDriver implements PWM for mains-power ------#
 class UdpBroker
 
     static PORT = 12233
@@ -39,25 +45,25 @@ class UdpBroker
     var lastLogProc
 
     #-
-    callback          if broker is stopped
+    callback          if broker is started
     para              (self)
     -#
     var onStarted
 
     #-
-    callback          if broker is started
+    callback          if broker is stopped
     para              (self)
     -#
     var onStopped
 
-     # log with level INFO
+     # log with level 'INFO'
      def info(proc,info)
         self.lastLogProc = proc
         self.lastLogInfo = info
         if self.infoEnable print("INFO "+self.name+"."+proc+" - "+info) end
      end
 
-    # log with level WARN
+    # log with level 'WARN'
     def warn(proc,info)
         self.lastLogProc = proc
         self.lastWarnInfo = info
@@ -95,19 +101,27 @@ class UdpBroker
 
     #-
     function      susbscribe to a specific topic
-    return        true, if all checks are ok
+    return        true, if all checks are ok, false otherwise
     -#
-    def subscribe(topic,closure)
+    def subscribe(topic,closure,isCmd)
         var cproc="subscribe"
 
-        # clousure must be  a function
+        # closure must be  a function
         if type(closure) != 'function'
             self.warn(cproc," closure is not a function")
             return false
         end
 
         for m : self.topics
-            if m.topic == topic && m.closure == closure
+            var found=false
+
+            if isCmd
+                found=m.topic == topic && m.isCmd
+            else
+                found=m.topic == topic && !m.isCmd
+            end
+
+            if found
                 self.info(cproc,"topic already subscribed:"+str(topic))
                 return  false                                    
             end
@@ -116,6 +130,8 @@ class UdpBroker
         var xtopic = UdpTopic()
         xtopic.topic = topic
         xtopic.closure = closure
+        xtopic.isCmd = isCmd==true
+
         self.topics.push(xtopic)
         self.info(cproc,"subscribe to topic:"+str(topic))
 
@@ -124,22 +140,27 @@ class UdpBroker
 
     #-
     function      unsubscribe a specific topic
-    return        true, if all checks are ok
+    return        true, if all checks are ok, false otherwise
     -#
-    def unsubscribe(topic)
-        if self.topics == nil  return end 
-        var i = 0
+    def unsubscribe(topic,isCmd)
 
+        if self.topics == nil  return end 
+        ## convert to boolean
+        isCmd = isCmd == true
+
+        var i = 0
         while i < size(self.topics)
-          if topic == nil || self.topics[i].topic == topic
-            self.topics.remove(i)   # remove and don't increment
-          else
-            i += 1
-          end
+            var xtopic = self.topics[i]
+
+            if xtopic.topic == topic && xtopic.isCmd == isCmd
+                self.topics.remove(i)   # remove and don't increment
+            else
+                i += 1
+            end
         end        
     end
 
-    # forward the topic to all subscribers for it
+    # forward the message to all subscribers for given topic
     def process(topic,payload)
         var cproc="process"
 
@@ -157,21 +178,9 @@ class UdpBroker
     end
 
     #-
-    function      checks whether value can be converted into a valid json
-    return        true, if value is a valid json, otherwise false 
-    -#
-    def isJson(value)
-        var data = json.load(value)
-        if classname(data)=='map'
-          return true
-        else
-          return false
-        end 
-    end
-
-    #-
-      check perodically new incomming messages
-        forward the message to subscriber if topic matches
+      - checks perodically for incomming udp-messages
+      - checks the validity
+      - forwards the message to the subscribers
     -#
     def every_100ms()
         var cproc="every_poll"
@@ -181,13 +190,13 @@ class UdpBroker
             return
         end
         
-        # only for deubugging issues
+        # only for debugging issues
         self.tickCounter=self.tickCounter+1
         if self.tickCounter>=1000
             self.tickCounter=0
         end
 
-        # try to read an udp packet
+        # try to read the udp packet
         var packet = self.udp.read()
         if packet == nil
             return
@@ -202,8 +211,8 @@ class UdpBroker
         # get paket as string
         var ss = packet.asstring()
 
-        # payload must be a json-string
-        if !self.isJson(ss)
+        # udp message must be a json-string
+        if !tool.isJson(ss)
             self.warn(cproc,"got a non-json-message:"+ss)
             return
         end
@@ -222,13 +231,15 @@ class UdpBroker
             return
         end  
 
-        self.info(cproc,"got valid message:"+ss)
+        if self.infoEnable
+            self.info(cproc,"got valid message:"+ss)
+        end
 
         # further processing of the message
         self.process(msg.topic,msg.payload)
     end
 
-    # start the udp-listener, publisher
+    # start the udp-listener
     def start()
 	   var cproc="start"
        if (self.udp!=nil)
@@ -250,7 +261,7 @@ class UdpBroker
        return result
     end
 
-    # stop the udp-listener
+    # stops the udp-listener
     def stop()
         var cproc="stop"
         if (self.udp==nil)
@@ -271,21 +282,12 @@ class UdpBroker
 
     end
 
-    #-
-      the handler for the command udppub
-
-      udppub <topic> <payload>
-
-    -#
-    def cmdHandler(cmd, idx, payload, payload_json)
-        var cproc="cmdHandler"
-        self.info(cproc,"cmd:" + cmd +" payload:"+payload)
-      
-        # get all arguments
-		var parts = string.split(payload," ")
+    # get command parts
+    def getParts(payload)
+        var parts = string.split(payload," ")
 
         # remove empty parts
-		var i=0
+	    var i=0
 		while i < size(parts)
 			if size(parts[i]) == 0
 				parts.remove(i)   
@@ -293,29 +295,117 @@ class UdpBroker
 				i += 1
 			end
 		end
+        return parts
+    end
 
-		self.info(cproc,"parts:",parts.tostring()," count:"+str(size(parts)))
+    # the handler for the command udppub
+    def cmdHandlerPub(cmd, idx, payload, payload_json)
+        var cproc="cmdHandlerPub"
 
-		# we need at least 2 args
+        if self.infoEnable self.info(cproc,"cmd:" + cmd +" payload:"+payload) end
+
+        var parts = self.getParts(payload)
+
+		# we need at least 2 non-null args
 		if size(parts)<2 
 		    tasmota.resp_cmnd_failed()
+            self.warn(cproc,"need at least 2 arguments")
 		    return
 		end
-		
-        # publish message using topic and payload
-		self.publish(parts[0],parts[1]) 
+
+        # get the payload part of the command, wich is all after the topic
+        var xtopic = parts[0]
+        var xpayload = string.split(payload,size(xtopic)+1)[1]
+
+        # publish message using broker
+		self.publish(xtopic ,xpayload) 
 
         # return OK result to tasmota
 		tasmota.resp_cmnd_done()
     end
 
-    # add a new tasmota command named 'udppub'
-    def addCommand()
-        var cproc="addCommand"
+    # triggers the rules-event
+    def triggerEvent(topic, payload)
+        var cproc="triggerEvent"
+
+        var ss= "event " + str(topic) + "=" + str(payload)
+        var result = tasmota.cmd(ss)
+
+        if self.infoEnable self.info(cproc,"fired event "+ss) end
+    end
+
+    # the handler for the command udpsub
+    def cmdHandlerSub(cmd, idx, payload, payload_json)
+        var cproc="cmdHandlerSub"
+
+        self.info(cproc,"cmd:" + cmd +" payload:"+payload)
+      
+        # get all arguments
+		var parts = self.getParts(payload)
+
+		# we need at least 1 non-null args
+		if size(parts)<1 
+		    tasmota.resp_cmnd_failed()
+            self.warn(cproc,"need at least 1 arguments")
+		    return
+		end
+
+        var xtopic = parts[0]
+
+        # publish message using broker
+		self.subscribe(xtopic,def(topic,payload) self.triggerEvent(topic,payload) end,true) 
+
+        # return OK result to tasmota
+		tasmota.resp_cmnd_done()
+    end
+
+    # the handler for the command udpunsub
+    def cmdHandlerUnsub(cmd, idx, payload, payload_json)
+        var cproc="cmdHandlerUnsub"
+
+        self.info(cproc,"cmd:" + cmd +" payload:"+payload)
+        
+            # get all arguments
+		var parts = self.getParts(payload)
+
+		# we need at least 1 non-null args
+		if size(parts)<1 
+		    tasmota.resp_cmnd_failed()
+            self.warn(cproc,"need at least 1 arguments")
+		    return
+		end
+
+        var xtopic = parts[0]
+
+        # unsubscribe topic 
+		self.unsubscribe(xtopic,true)
+
+        # return OK result to tasmota
+		tasmota.resp_cmnd_done()
+    end
+
+    # add a new tasmota commands
+    def addCommands()
+        var cproc="addCommands"
+
         var cmd="udppub"
         tasmota.remove_cmd(cmd)
         tasmota.add_cmd(cmd,
-            def (cmd, idx, payload, payload_json) self.cmdHandler(cmd, idx, payload, payload_json) end
+            def (cmd, idx, payload, payload_json) self.cmdHandlerPub(cmd, idx, payload, payload_json) end
+        )
+        self.info(cproc,"added command:"+cmd)
+
+        cmd="udpsub"
+        tasmota.remove_cmd(cmd)
+        tasmota.add_cmd(cmd,
+            def (cmd, idx, payload, payload_json) self.cmdHandlerSub(cmd, idx, payload, payload_json) end
+        )
+        self.info(cproc,"added command:"+cmd)
+
+        cmd="udpunsub"
+        tasmota.remove_cmd(cmd)
+        tasmota.add_cmd(cmd,
+            def (cmd, idx, payload, payload_json) self.cmdHandlerUnsub(cmd, idx, payload, payload_json) end
         )
         self.info(cproc,"added command:"+cmd)
     end
@@ -341,7 +431,7 @@ class UdpBroker
         self.infoEnable = true
         self.info(cproc,"udp-broker created using IP:" + self.IP + " Port:"+ str(self.PORT))
         self.infoEnable = false	
-        self.addCommand()
+        self.addCommands()
         tasmota.add_driver(self)
 
         tasmota.add_rule("Wifi#Connected", / -> self.start()) 

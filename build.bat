@@ -40,8 +40,7 @@ del tmp.txt
 set gitDate=%date:~6,4%-%date:~3,2%-%date:~0,2%
 
 :: create git.be
-echo var gitInfo='%gitHash% - %gitDate%  %gitState%'>git.be
-echo %gitHash% - %gitDate%  %gitState%
+echo var gitInfo='%gitDate% - %gitHash%'>git.be
 
 :: create uncompressed zip file
 

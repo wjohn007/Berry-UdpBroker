@@ -9,34 +9,58 @@ This application implements a message broker functionality using Multicast-UDP.
 
 ## Motivation
 
-I use Tasmota to read the values ​​from my smart meter using “scripting”.
-The current electrical power is required by many other Tasmota devices.
+There are scenarios in which one or more of the following conditions apply:
 
-In order to reduce further technical dependencies,
-I don't use MQTT.
-
-Therefore, another solution had to be found.
+* There should be as few technical dependencies as possible
+* No MQTT-Broker is available
+* MQTT messages are used for monitoring only, not for prodcutive mechanisms
+* MQTT-Broker is located in the Cloud and not useful for productive local usage
 
 
 ## How it works
 
 - the application opens a Multicast-UDP-Port on IP="224.3.0.1" and PORT=12233.
 - now it is able to receive all corresponding broadcast messages
-- the controller can also send a broadcast message through the publish method
-- publishing is also available as console-command and implements the synthax
+- if there exists a 'subscriber' the message is forwarded 
+- the controller can send a broadcast message using Berry or Tasmota-Commands
 
-        udppup <topic> <payload>
+
+## Available Commands
+
+Command                       | Example               | Comment
+---                           |---                    |---
+udppub \<topic\> \<payload\>  |udppub SM.PowerAV 22.23 | publish value '22.23' with topic 'SM.PowerAV'
+udpsub \<topic\>              |udpsub SM.PowerAV      | subscribe for topic 'SM.PowerAV', the reception  triggers 'event \<topic\>=\<payload\>'
+udpunsub \<topic\>            |udpunsub SM.PowerAV    | unsubscribe topic 'SM.PowerAV'
+
+*Remarks*
+
+You can subscribe the same topic for using 'Commands' by 'udpsub'  and using 'Berry' by 'udpBroker.subscribe(\<topic\>).
+
+Both subscriptions exist independently of each other.
+This also applies to unsubscribing to a topic.
+
+A rule example
+
+This rule writes the payload of received UDP-message of topic 'SM.PowerAV' to 'var1'
+```
+rule1 
+  ON event#SM.PowerAV do var1 %value% ENDON 	      
+rule1 1
+
+udpsub SM.PowerAV   
+```
 
 
 ## How to install
 
-Upload following files to the Tasmota-Controller
+Upload following files to the Controller
 
 - udpBroker.tapp
 - udpBroker01.be   (is executed before components are created)
 - udpBroker02.be   (is after components are created)
   
-After that restart the controllers and you should see following picture of the file-system.
+After restart of the controller and you should see following picture of the file-system.
 
 ![Alt text](images/filesystem.png)
 
@@ -44,7 +68,8 @@ After that restart the controllers and you should see following picture of the f
 
 ## How to test
 
-  We need 2 controllers (Controller-A and Controller-B) with installed udp-Broker  and following setting
+  We need 2 controllers (Controller-A and Controller-B) with installed udp-Broker  and following setting.
+  “InfoEnable” makes the udpBroker more talkative.
   
 ```java
      udpBroker.infoEnable=true
@@ -63,11 +88,9 @@ After that restart the controllers and you should see following picture of the f
   It is also possible to perform this from berry-console using the publish-method.
 
 
-```bat
+```java
   udpBroker.publish("global/test","hello world")
 ```
 
 Take a look to file [udpBroker02.be](udpBroker02.be) and find how to subscribe for a topic.
-
-## How to change parameters
 
