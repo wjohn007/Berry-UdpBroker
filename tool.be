@@ -10,6 +10,7 @@ tool.init = def (m)
 
     class Tool
         var lastIsNumberResult
+        var lastJsonResult
         var lastLogInfo
         var lastWarnInfo
         var lastLogProc
@@ -55,8 +56,8 @@ tool.init = def (m)
         return        true, if value is a valid json, false otherwise 
         -#
         def isJson(value)
-            var data = json.load(value)
-            if classname(data)=='map'
+            self.lastJsonResult = json.load(value)
+            if classname(self.lastJsonResult)=='map'
                 return true
             else
                 return false

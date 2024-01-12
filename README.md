@@ -29,30 +29,110 @@ There are scenarios in which one or more of the following conditions apply:
 
 Command                       | Example               | Comment
 ---                           |---                    |---
-udppub \<topic\> \<payload\>  |udppub SM.PowerAV 22.23 | publish value '22.23' with topic 'SM.PowerAV'
-udpsub \<topic\>              |udpsub SM.PowerAV      | subscribe for topic 'SM.PowerAV', the reception  triggers 'event \<topic\>=\<payload\>'
-udpunsub \<topic\>            |udpunsub SM.PowerAV    | unsubscribe topic 'SM.PowerAV'
+udppub \<topic\> \<payload\>  |udppub SM.simple 22.23 | publish value '22.23' with topic 'SM.simple'
+udpsub \<topic\>              |udpsub SM.simple       | subscribe for topic 'SM.simple'
+udpunsub \<topic\>            |udpunsub SM.simple     |  unsubscribe topic 'SM.simple'
 
 *Remarks*
+
+As a convention: The rule-trigger must begin with 'udpBroker#...'
+
 
 You can subscribe the same topic for using 'Commands' by 'udpsub'  and using 'Berry' by 'udpBroker.subscribe(\<topic\>).
 
 Both subscriptions exist independently of each other.
 This also applies to unsubscribing to a topic.
 
-### A 'rule' example
 
-This rule on Controller-A writes the payload of received UDP-message of topic 'SM.PowerAV' to 'var1'
-```sh
+-------------------------
+
+
+### A simple 'rule' example
+
+Controller-A publishes a value via udpBroker with topic 'SM.simple'.<br>
+Controller-B ist interested on that value and wants to store it in the variable 'var1'.
+
+
+#### Controller-B:  prepare a rule
+
+The topic of the message is 'SM.simple'. 
+
+To distinguish it from other namespaces the prefix 'udpBroker' is always required within a rule definition.
+
+```
 rule1 
-  ON event#SM.PowerAV do var1 %value% ENDON 	      
+  ON udpBroker#SM.simple do var1 %value% ENDON 	
+      
 rule1 1
 ```
 
-Perform this on Controller-B and send an udp-broadcast message.
-```sh
-udpsub SM.PowerAV 123  
+#### Controller-B:  subscribe the the topic of interst
+
 ```
+udpsub SM.simple 
+```
+
+#### Controller-A: publish the value
+
+```
+udppub SM.simple  22.23
+```
+
+#### Check the result
+
+Check the output of the Console.
+
+```
+..MQT: stat/tasmota_testing/RESULT = {"Var1":"22.23"}
+```
+
+
+--------------------
+
+
+### An enhanced 'rule' example
+
+Controller-A publishes a json-payload via udpBroker with topic 'SM.enhanced'.
+
+```json
+{"Power":1000,"Voltage":220}
+```
+
+Controller-B ist interested on Property 'Voltage' and wants to store it in the variable 'var1'.
+
+#### Controller-B:  prepare a rule
+
+Accessing elements of the json-payload is compliant with standard Tasmota practices.
+
+```
+rule1 
+  ON udpBroker#SM.enhanced#Voltage do var1 %value% ENDON 
+
+rule1 1
+```
+
+#### Controller-B:  subscribe the the topic of interst
+
+```
+udpsub SM.enhanced
+```
+
+#### Controller-A: publish the value
+
+
+```
+udppub SM.enhanced  {"Power:1000,"Voltage":220} 
+```
+
+
+#### Check the result
+
+Check the output of the Console.
+
+```
+..MQT: stat/tasmota_testing/RESULT = {"Var1":"220"}
+```
+
 
 
 ## How to install
@@ -68,31 +148,41 @@ After restart of the controller and you should see following picture of the file
 ![Alt text](images/filesystem.png)
 
 
-## How to test
+## How to deal with Berry
 
-  We need 2 controllers (Controller-A and Controller-B) with installed udp-Broker  and following setting.
-  “InfoEnable” makes the udpBroker more talkative.
-  
-```java
-     udpBroker.infoEnable=true
- ```
-
-  Perform following command in 'Console' of Controller-A:
-
-```sh
-  udppub global/test hello world
- ```
-
-  You will receive on controller-B
-
-    .... INFO broker.every_poll - got valid message:{"topic":"global/test","payload":"hello world"}
-
-  It is also possible to perform this from berry-console using the publish-method.
+Take a look to file [udpBroker02.be](udpBroker02.be).
 
 
-```java
-  udpBroker.publish("global/test","hello world")
+## Under the hood
+
+The class UdpBroker is designed as a Tasmota-driver.
+
+```be
+    tasmota.add_driver(self) 
+```
+### Start/Stop of the broker
+
+UdpBroker is started/stopped synchronize with Wifi-connection.
+
+```be
+    tasmota.add_rule("Wifi#Connected", / -> self.start()) 
+    tasmota.add_rule("Wifi#Disconnected", / -> self.stop()) 
 ```
 
-Take a look to file [udpBroker02.be](udpBroker02.be) and find how to subscribe for a topic.
+### Load
 
+Note that each broadcast message is processed by the controller.
+Too many messages can overwhelm the controller.
+
+### Enable Logging
+
+The berry-variable 'udpBroker' is global.
+
+Use following statement in the Berry-Console to obtain more log-information.
+
+    udpBroker.infoEnable=true
+
+
+### No wildcard support for subscribing
+
+Wildcard mechanisms like MQTT are omitted in favor of simplicity.

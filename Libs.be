@@ -14,6 +14,10 @@ class DynClass
         self.xmap[name] = value
     end
 
+    def setitem(name,value)
+        self.xmap[name] = value
+    end
+
     def member(name)
         if self.xmap.contains(name)
             return self.xmap[name]

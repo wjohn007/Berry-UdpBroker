@@ -327,11 +327,26 @@ class UdpBroker
     # triggers the rules-event
     def triggerEvent(topic, payload)
         var cproc="triggerEvent"
+        var ss=nil
 
-        var ss= "event " + str(topic) + "=" + str(payload)
-        var result = tasmota.cmd(ss)
+        if tool.isJson(payload)
+            # use the map instead of string
+            if self.infoEnable self.info(cproc,"payload is json") end
+            payload=tool.lastJsonResult
+        end
 
-        if self.infoEnable self.info(cproc,"fired event "+ss) end
+        # create nested json object like  {"udpBroker":{"SM.PowerAV":"2917.8"}}
+        var nested = DynClass()
+        nested[topic]=payload
+        
+        dyn = DynClass()
+        dyn.udpBroker = nested.xmap
+        ss = dyn.toJson()
+
+        if self.infoEnable self.info(cproc,"fire event "+ss) end
+
+        # feed the rules engine
+        tasmota.publish_rule(ss)
     end
 
     # the handler for the command udpsub

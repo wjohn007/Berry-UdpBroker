@@ -32,3 +32,6 @@ udpBroker.subscribe(topicForUdpTest,UdpMessageHandler)
 udpBroker.onStarted = def(obj) print("udp broker has started") end
 
 udpBroker.onStopped = def(obj) print("udp broker has stopped") end
+
+# publishing example with berry
+udpBroker.publish(topicForUdpTest,"Hello world")
