@@ -162,14 +162,14 @@ The class UdpBroker is designed as a Tasmota-driver.
 ```
 ### Start/Stop of the broker
 
-UdpBroker is started/stopped synchronize with Wifi-connection.
+UdpBroker is started/stopped synchronized with Wifi-connection.
 
 ```be
     tasmota.add_rule("Wifi#Connected", / -> self.start()) 
     tasmota.add_rule("Wifi#Disconnected", / -> self.stop()) 
 ```
 
-### Load
+### High Load
 
 Note that each broadcast message is processed by the controller.
 Too many messages can overwhelm the controller.
@@ -180,9 +180,15 @@ The berry-variable 'udpBroker' is global.
 
 Use following statement in the Berry-Console to obtain more log-information.
 
+```be
     udpBroker.infoEnable=true
-
+```
 
 ### No wildcard support for subscribing
 
 Wildcard mechanisms like MQTT are omitted in favor of simplicity.
+
+
+### Insecure transmission with UDP
+
+If you need a value once per minute, you should transfer it every 10 seconds.
