@@ -35,3 +35,6 @@ udpBroker.onStopped = def(obj) print("udp broker has stopped") end
 
 # publishing example with berry
 udpBroker.publish(topicForUdpTest,"Hello world")
+
+# Enable publishing of the sensor-message
+udpBroker.setTeleEnable(true)

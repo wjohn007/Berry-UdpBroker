@@ -23,6 +23,7 @@ There are scenarios in which one or more of the following conditions apply:
 - now it is able to receive all corresponding broadcast messages
 - if there exists a 'subscriber' the message is forwarded 
 - the controller can send a broadcast message using Berry or Tasmota-Commands
+- the sensor-message can also be send according to the teleperiod interval
 
 
 ## Available Commands

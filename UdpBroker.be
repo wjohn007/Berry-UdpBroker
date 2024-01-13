@@ -44,6 +44,11 @@ class UdpBroker
     var lastWarnInfo
     var lastLogProc
 
+    var sensorTopic
+
+    var teleEnableState
+    var lastTele
+
     #-
     callback          if broker is started
     para              (self)
@@ -71,8 +76,8 @@ class UdpBroker
     end
 
     #-
-    function      publish the value to the given topic
-    return        the message to be published 
+    function      publish the value(string) to the given topic(string)
+    return        true if successful, false otherwise
     -#
     def publish(topic,value)
         var cproc="publish"
@@ -425,6 +430,28 @@ class UdpBroker
         self.info(cproc,"added command:"+cmd)
     end
 
+    def teleHandler(value, trigger)
+        # print ("teleHandler.01")
+        self.lastTele = value
+
+        if !value.contains("Wifi") && string.find(str(self.lastTele),"Time")==2
+            # print ("publish sensor:",value)
+            self.publish(self.sensorTopic,json.dump(value))
+        end
+    end
+
+    def setTeleEnable(value)
+
+        self.teleEnableState = value == true
+
+        tasmota.remove_rule("tele")
+
+        if self.teleEnableState 
+            tasmota.add_rule("tele",def(value,trigger) self.teleHandler(value,trigger) end)
+        end
+
+    end
+
     # destructor
     def deinit()
         var cproc="deinit"
@@ -432,12 +459,31 @@ class UdpBroker
 
         tasmota.remove_driver(self)
         self.warn(cproc,"deinit done")    
+
     end
 
 	# constructor	
 	def init(name)
 		var cproc="init"
 	
+        self.teleEnableState = false
+
+        # -------- create sensor topic
+        var fullTopic = tasmota.cmd('FullTopic')['FullTopic']
+
+        # tasmota_boiler_pm
+        var topic = tasmota.cmd('Topic')['Topic']
+
+        # tele
+        var prefix = tasmota.cmd('Prefix')['Prefix3']
+
+         # %prefix%/tasmota_boiler_pm/
+        var udpSensorTopic = string.replace(fullTopic, '%topic%', topic)
+        udpSensorTopic = string.replace(udpSensorTopic, '%prefix%', prefix)
+        udpSensorTopic += 'SENSOR'
+        self.sensorTopic = udpSensorTopic
+
+        # --------
         self.paketCounter=0
         self.tickCounter=0
         self.topics=[]

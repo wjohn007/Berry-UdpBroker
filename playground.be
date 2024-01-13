@@ -11,6 +11,8 @@ end
 
 udpBroker=UdpBroker("udBroker")
 udpBroker.infoEnable=true
+udpBroker.sendSensors=true
+
 
 # Controller-B:  prepare a rule
 tasmota.cmd("rule1 ON udpBroker#SM.simple do var1 %value% ENDON"); 
@@ -95,5 +97,16 @@ udpBroker.triggerEvent("SM.enhanced",'{"Power":1000,"Voltage":220}')
 tasmota.cmd('udpsub SM.enhanced')
 tasmota.cmd('udppub SM.enhanced  {"Power":1000,"Voltage":220}')
 
+# -------
 
+tasmota.cmd("udpsub tele/tasmota_testing/SENSOR")
 
+#    rule1 ON udpBroker#tele/tasmota_testing/SENSOR#ANALOG#Illuminance1 do var1 11 ENDON
+# ok    rule1 ON udpBroker#tele/tasmota_testing/SENSOR  do var1 11 ENDON
+#       rule1 ON udpBroker#tele/tasmota_testing/SENSOR#ANALOG  do var1 11 ENDON
+#       rule1 ON udpBroker#tele/tasmota_testing/SENSOR#ANALOG#Illuminance1  do var1 11 ENDON
+#       rule1 ON udpBroker#tele/tasmota_testing/SENSOR#ANALOG#Illuminance1  do var1 %value% ENDON
+tasmota.cmd("rule1 ON udpBroker#tele/tasmota_testing/SENSOR#ANALOG#Illuminance1 do var1 %value% ENDON"); 
+tasmota.cmd("rule1 1")
+
+udpBroker.setTeleEnable(true)
