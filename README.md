@@ -134,7 +134,26 @@ Check the output of the Console.
 ..MQT: stat/tasmota_testing/RESULT = {"Var1":"220"}
 ```
 
+## Forward the complete SENSOR message
 
+It is possible to publish the complete standard SENSOR message.
+
+```be
+udpBroker.setTeleEnable(true)
+```
+The publishing device shows following properties
+
+    Topic             : tasmota_testing
+    Sensor            : ADC Light
+    Sensor telegram    : ... MQT: tele/tasmota_testing/SENSOR = {"Time":"2024-01-14T12:25:35","ANALOG":{"Illuminance1":0}}
+
+
+To capture the value of the “ANALOG” sensor on another device running udpBroker, you need to do the following in the console:
+
+```
+udpsub tele/tasmota_testing/SENSOR
+rule1 ON udpBroker#tele/tasmota_testing/SENSOR#ANALOG#Illuminance1 do var1 %value% ENDON
+```
 
 ## How to install
 

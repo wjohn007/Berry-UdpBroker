@@ -20,6 +20,7 @@ set host=192.168.178.126
 if exist "%copyRoot%" (
 copy /y %copyRoot%\Common\Libs.be .
 copy /y %copyRoot%\Common\tool.be .
+copy /y %copyRoot%\AppUdpBroker\UdpBroker.be .
 )
 
 :: create git hash
