@@ -3,12 +3,15 @@ The module 'tool' impelments common functions
 ------------------------------------#
 import json
 import string
+import webserver
 
 tool = module("tool")
 
 tool.init = def (m)
 
     class Tool
+        static BerryStyle='<style>table.berry {max-width:100%;table-layout: fixed;}table, th,td { border: 1px solid #f4f5f0; text-align: center; border-collapse: collapse;} </style>'
+
         var lastIsNumberResult
         var lastJsonResult
         var lastLogInfo
@@ -18,6 +21,7 @@ tool.init = def (m)
 
         def init()
             self.infoEnable = false
+            tasmota.add_driver(self)
         end
 
         def info(proc,info)
@@ -136,6 +140,18 @@ tool.init = def (m)
         
             return obj[propName]    
         end
+
+
+        #  function     callback for tasmota driver mimic
+        #  installs in the static part of the main page the javaScript 'dola'
+        def web_add_main_button()
+            var cproc="web_add_main_button"
+            self.info(cproc,"run")
+
+            # javascript enhancement using function 'dola'
+            var html='<script> function dola(t){let e=""==t.value?"1":t.value,l;la("&"+t.getAttribute("id")+"="+e)} </script>'
+            webserver.content_send(html)
+	    end        
     end
 
     # return a single instance for this class
