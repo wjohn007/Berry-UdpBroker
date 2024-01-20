@@ -139,7 +139,7 @@ Check the output of the Console.
 It is possible to publish the complete standard SENSOR message.
 
 ```be
-udpBroker.setTeleEnable(true)
+udpBroker.publishSensorMsg(true)
 ```
 The publishing device shows following properties
 

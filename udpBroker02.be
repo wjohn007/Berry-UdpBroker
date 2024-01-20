@@ -37,4 +37,4 @@ udpBroker.onStopped = def(obj) print("udp broker has stopped") end
 udpBroker.publish(topicForUdpTest,"Hello world")
 
 # Enable publishing of the sensor-message
-udpBroker.setTeleEnable(true)
+udpBroker.publishSensorMsg(true)
