@@ -271,7 +271,7 @@ class UdpBroker
 
        self.udp = udp()      
        var result = self.udp.begin_multicast(self.IP, self.PORT)
-       self.warn(cproc,"broker started with result:"+str(result)+ " and isRestart="+ str(isRestart))
+       self.info(cproc,"broker started with result:"+str(result)+ " and isRestart="+ str(isRestart))
 
        if self.onStarted && !isRestart
             try
