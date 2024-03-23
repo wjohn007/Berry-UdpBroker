@@ -28,9 +28,12 @@ class DynClass
         if self.xmap.contains(name)
             return self.xmap[name]
         else
-            import undefined
             return undefined
         end
+    end
+
+    def contains(name)
+        return self.xmap.contains(name)
     end
 
     # return members as json-string

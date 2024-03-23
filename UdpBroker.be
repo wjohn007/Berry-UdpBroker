@@ -487,6 +487,10 @@ class UdpBroker
 	def init(name)
 		var cproc="init"
 	
+        if name==nil
+            name="UdpBroker"
+        end
+
         self.publishSensorEnable = false
 
         # -------- create sensor topic

@@ -4,6 +4,7 @@ The module 'tool' impelments common functions
 import json
 import string
 import webserver
+import math
 
 tool = module("tool")
 
@@ -163,7 +164,6 @@ tool.init = def (m)
             return obj[propName]    
         end
 
-
         #  function     callback for tasmota driver mimic
         #  installs in the static part of the main page the javaScript 'dola'
         def web_add_main_button()
@@ -173,7 +173,18 @@ tool.init = def (m)
             # javascript enhancement using function 'dola'
             var html='<script> function dola(t){let e=""==t.value?"1":t.value,l;la("&"+t.getAttribute("id")+"="+e)} </script>'
             webserver.content_send(html)
-	    end        
+	    end  
+
+        #  function     calculates the dewpoint
+        def calcDewpoint(temp,hum)
+            var rf1 = 0.01 * hum
+            var k1 = 0.124688
+            var k2 = 109.8
+            var s = math.pow(rf1,k1)
+            var result = (s * (k2 + temp)) - k2
+            return result
+        end        
+        
     end
 
     # return a single instance for this class
