@@ -22,6 +22,24 @@ import string
 import json
 import undefined
 
+class TopicNames
+     static MeterPowerAVOld = "SM.PowerAV"
+     static MeterPowerAV = "meter/power/average" 
+
+     static RoomK1 = "room/K1"
+
+     static CcuThermostat = "CCU/thermostat"  
+     static CcuButton = "CCU/button"
+
+     static ExcessCoordination = "global/controller/excess"
+
+     static CentralFan = "global/centralFan"
+      
+     static Mi32Sensors="global/mi32Sensors/temperature"
+     static OpenMeteo="global/meteo"
+end
+
+
 class UdpTopic
     var topic
     var closure
@@ -29,7 +47,7 @@ class UdpTopic
 end	
 
 class UdpBroker
-
+    
     static PORT = 12233
     static IP = "224.3.0.1"
 
@@ -368,7 +386,7 @@ class UdpBroker
         dyn.udpBroker = nested.toMap()
         ss = dyn.toJson()
 
-        if self.infoEnable self.info(cproc,"fire event "+ss) end
+        if self.infoEnable self.info(cproc,f"fire event {ss}") end
 
         # feed the rules engine
         tasmota.publish_rule(ss)
@@ -378,7 +396,7 @@ class UdpBroker
     def cmdHandlerSub(cmd, idx, payload, payload_json)
         var cproc="cmdHandlerSub"
 
-        self.info(cproc,"cmd:" + cmd +" payload:"+payload)
+        self.info(cproc,f"{cmd=} {payload=}")
       
         # get all arguments
 		var parts = self.getParts(payload)
@@ -403,7 +421,7 @@ class UdpBroker
     def cmdHandlerUnsub(cmd, idx, payload, payload_json)
         var cproc="cmdHandlerUnsub"
 
-        self.info(cproc,"cmd:" + cmd +" payload:"+payload)
+        self.info(cproc,f"{cmd=} {payload=}")
         
             # get all arguments
 		var parts = self.getParts(payload)
@@ -433,21 +451,21 @@ class UdpBroker
         tasmota.add_cmd(cmd,
             def (cmd, idx, payload, payload_json) self.cmdHandlerPub(cmd, idx, payload, payload_json) end
         )
-        self.info(cproc,"added command:"+cmd)
+        self.info(cproc,f"added {cmd=}")
 
         cmd="udpsub"
         tasmota.remove_cmd(cmd)
         tasmota.add_cmd(cmd,
             def (cmd, idx, payload, payload_json) self.cmdHandlerSub(cmd, idx, payload, payload_json) end
         )
-        self.info(cproc,"added command:"+cmd)
+        self.info(cproc,f"added {cmd=}")
 
         cmd="udpunsub"
         tasmota.remove_cmd(cmd)
         tasmota.add_cmd(cmd,
             def (cmd, idx, payload, payload_json) self.cmdHandlerUnsub(cmd, idx, payload, payload_json) end
         )
-        self.info(cproc,"added command:"+cmd)
+        self.info(cproc,f"added {cmd=}")
     end
 
     def teleHandler(value, trigger)
@@ -515,7 +533,7 @@ class UdpBroker
 
         self.name = name
         self.infoEnable = true
-        self.info(cproc,"udp-broker created using IP:" + self.IP + " Port:"+ str(self.PORT))
+        self.info(cproc,f"udp-broker created using IP:{self.IP} Port:{self.PORT}")
         self.infoEnable = false	
         self.addCommands()
         tasmota.add_driver(self)

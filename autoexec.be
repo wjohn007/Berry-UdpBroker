@@ -58,7 +58,7 @@ end
 
 xload("configure02.be")
 
-# settings after initializations
+# settings after initializations : xload("udpBroker02.be",true)
 xload(appName+"02.be",true)
 
 
