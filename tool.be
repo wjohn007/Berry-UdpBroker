@@ -170,7 +170,7 @@ tool.init = def (m)
         #  installs in the static part of the main page the javaScript 'dola'
         def web_add_main_button()
             import webserver
-            
+
             var cproc="web_add_main_button"
             self.info(cproc,"run")
 
@@ -212,5 +212,5 @@ end
 # return the module as the output of import, which is eventually replaced by the return value of 'init()'
 return tool 
 #@ solidify:tool.init,weak
-#@ solidify:tool.info,weak
-#@ solidify:tool.warn,weak
+#@ solidify:Tool.info,weak
+#@ solidify:Tool.warn,weak
