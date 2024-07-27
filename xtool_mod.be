@@ -3,7 +3,7 @@ The static class  implements common functions
 ------------------------------------#
 
 #@ solidify:xtool_mod
-xtool_mod= module("xtool")
+var xtool_mod = module('xtool')
 
 
 class XTool
