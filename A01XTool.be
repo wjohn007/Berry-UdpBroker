@@ -2,8 +2,8 @@
 The static class  implements common functions
 ------------------------------------#
 
-#@ solidify:xtool_mod
-var xtool_mod = module('xtool')
+#@ solidify:xtool
+var xtool = module('xtool')
 
 
 class XTool
@@ -110,14 +110,14 @@ class XTool
     end
 end
 
-xtool_mod.XTool = XTool
+xtool.XTool = XTool
 
-xtool_mod.init = def (m)   
+xtool.init = def (m)   
     import global
-    global.xtool_mod = m
+    global.xtool = m
     # return a single instance for this class
     return XTool()
 end
 
 # return the module as the output of import, which is eventually replaced by the return value of 'init()'
-return xtool_mod 
+return xtool 
