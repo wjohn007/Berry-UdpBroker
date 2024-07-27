@@ -253,7 +253,7 @@ class UdpBroker
         var ss = packet.asstring()
 
         # udp message must be a json-string
-        if !tool.isJson(ss)
+        if !xtool.isJson(ss)
             self.warn(cproc,"got a non-json-message:"+ss)
             return
         end
@@ -383,10 +383,10 @@ class UdpBroker
         var cproc="triggerEvent"
         var ss=nil
 
-        if tool.isJson(payload)
+        if xtool.isJson(payload)
             # use the map instead of string
             if self.infoEnable self.info(cproc,"payload is json") end
-            payload=tool.lastJsonResult
+            payload=xtool.lastJsonResult
         end
 
         # create nested json object like  {"udpBroker":{"SM.PowerAV":"2917.8"}}
@@ -562,4 +562,3 @@ class UdpBroker
 
 
 
- 
