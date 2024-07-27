@@ -3,23 +3,26 @@ The static class  implements common functions
 ------------------------------------#
 
 #@ solidify:xtool
-class xtool
-    static lastJsonResult 
-    static lastIsBoolResult
-    static lastIsNumberResult
-    static lastLogInfo
-    static lastWarnInfo
-    static rebootWeeklyActivated
+xtool= module("xtool")
 
-    static def info(proc,info)
-        xtool.lastLogProc = proc
-        xtool.lastLogInfo = info
-        if xtool.infoEnable print("INFO xtool."..proc.." - "..info) end
+
+class XTool
+    var lastJsonResult 
+    var lastIsBoolResult
+    var lastIsNumberResult
+    var lastLogInfo
+    var lastWarnInfo
+    var rebootWeeklyActivated
+
+    def info(proc,info)
+        self.lastLogProc = proc
+        self.lastLogInfo = info
+        if self.infoEnable print("INFO xtool."..proc.." - "..info) end
     end    
 
-    static  def warn(proc,info)
-        xtool.lastLogProc = proc
-        xtool.lastWarnInfo = info
+    def warn(proc,info)
+        self.lastLogProc = proc
+        self.lastWarnInfo = info
         print("WARN xtool."..proc.." - "..info)
     end
 
@@ -27,11 +30,11 @@ class xtool
     function      checks whether value can be converted into a valid json
     return        true, if value is a valid json, false otherwise 
     -#
-    static def isJson(value)
+    def isJson(value)
         
         import json
-        xtool.lastJsonResult = json.load(value)
-        if classname(xtool.lastJsonResult)=='map'
+        self.lastJsonResult = json.load(value)
+        if classname(self.lastJsonResult)=='map'
             return true
         else
             return false
@@ -42,11 +45,11 @@ class xtool
         function      checks whether value can be converted to a bool value
         returns       true, if value is convertible to a bool, false otherwise 
     -#
-    static def isBool(value)
+    def isBool(value)
         import json
         import string
 
-        xtool.lastIsBoolResult=nil
+        self.lastIsBoolResult=nil
 
         if value==nil return false end
 
@@ -58,7 +61,7 @@ class xtool
         var xval = data["value"]
     
         if type(xval)  == 'bool'
-            xtool.lastIsBoolResult =xval
+            self.lastIsBoolResult =xval
             return true
         else
             return false
@@ -69,16 +72,16 @@ class xtool
     function      checks whether value can be converted to a number value
     return        true, if value is convertible to a number, false otherwise
     -#
-    static def isNumber(value)
+    def isNumber(value)
         import json
-        xtool.lastIsNumberResult = json.load(str(value))
-        var xtype = type(xtool.lastIsNumberResult)
+        self.lastIsNumberResult = json.load(str(value))
+        var xtype = type(self.lastIsNumberResult)
         var result = xtype == "int" || xtype == "real"
         return result
     end
 
     #  calculates the dewpoint
-    static def calcDewpoint(temp,hum)
+    def calcDewpoint(temp,hum)
         import math
 
         var rf1 = 0.01 * hum
@@ -90,9 +93,9 @@ class xtool
     end   
 
     # reboots at Sa at 09:00
-    static def rebootWeekly()
+    def rebootWeekly()
         var cproc="rebootWeekly"
-        xtool.info(cproc,"will reboot weekly")
+        self.info(cproc,"will reboot weekly")
 
         # seconds minute hour day   month Weekday
         # 0-59    0-59   0-23 1-30  1-12  0 (So)-6(Sa)
@@ -103,7 +106,18 @@ class xtool
             tasmota.cmd("restart 1")
             end
             ,'weeklyRestart') 
-            xtool.rebootWeeklyActivated=true
+            self.rebootWeeklyActivated=true
     end
-
 end
+
+xtool.XTool = XTool
+
+xtool.init = def (m)   
+    import global
+    global.xtool = m
+    # return a single instance for this class
+    return XTool()
+end
+
+# return the module as the output of import, which is eventually replaced by the return value of 'init()'
+return xtool 

@@ -19,7 +19,7 @@ set host=192.168.178.126
 :: copy from master repo
 if exist "%copyRoot%" (
 copy /y %copyRoot%\Common\A01DynClass.be .
-copy /y %copyRoot%\Common\A01Tool.be .
+copy /y %copyRoot%\Common\xtool.be .
 copy /y %copyRoot%\Common\G01UdpBroker.be .
 )
 
