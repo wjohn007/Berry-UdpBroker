@@ -20,7 +20,7 @@ set host=192.168.178.126
 if exist "%copyRoot%" (
 copy /y %copyRoot%\Common\Libs.be .
 copy /y %copyRoot%\Common\DynClass.be .
-copy /y %copyRoot%\Common\tool.be .
+copy /y %copyRoot%\Common\xtool.be .
 copy /y %copyRoot%\Common\UdpBroker.be .
 )
 

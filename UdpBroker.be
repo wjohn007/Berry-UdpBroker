@@ -44,13 +44,14 @@ class TopicNames
      static Testing = "global/testing"
 end
 
-
+#@ solidify:UdpTopic
 class UdpTopic
     var topic
     var closure
     var isCmd
 end	
 
+#@ solidify:UdpBroker
 class UdpBroker
     
     static PORT = 12233
@@ -559,3 +560,6 @@ class UdpBroker
 	end	   
  end      
 
+
+
+ 
