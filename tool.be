@@ -211,6 +211,6 @@ end
 
 # return the module as the output of import, which is eventually replaced by the return value of 'init()'
 return tool 
-#@ solidify:tool.init,weak
-#@ solidify:Tool.info,weak
-#@ solidify:Tool.warn,weak
+#  @ solidify:tool.init,weak
+#  @ solidify:Tool.init.info,weak
+

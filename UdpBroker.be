@@ -22,6 +22,7 @@ import string
 import json
 import undefined
 
+#@ solidify:TopicNames
 class TopicNames
 
     static CcuThermostat = "CCU/thermostat"  
