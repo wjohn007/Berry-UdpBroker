@@ -51,7 +51,7 @@ class UdpTopic
     var isCmd
 end	
 
-#@ solidify:UdpBroker
+#@ solidify:UdpBroker,weak
 class UdpBroker
     
     static PORT = 12233
@@ -393,7 +393,7 @@ class UdpBroker
         var nested = DynClass()
         nested[topic]=payload
         
-        dyn = DynClass()
+        var dyn = DynClass()
         dyn.udpBroker = nested.toMap()
         ss = dyn.toJson()
 

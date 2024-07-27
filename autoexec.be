@@ -41,8 +41,9 @@ import tool
 
 # define types
 xload("git.be")
-xload("Libs.be")
-xload("UdpBroker.be")
+xload("A01DynClass.be")
+xload("A01Tool.be")
+xload("G01_UdpBroker.be")
 
 
 # define global variables
