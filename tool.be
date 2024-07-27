@@ -4,10 +4,9 @@ The module 'tool' impelments common functions
 
 import json
 import string
-import webserver
 import math
 
-#@ solidify:tool
+#    @ solidify:tool
 tool = module("tool")
 
 tool.init = def (m)
@@ -170,6 +169,8 @@ tool.init = def (m)
         #  function     callback for tasmota driver mimic
         #  installs in the static part of the main page the javaScript 'dola'
         def web_add_main_button()
+            import webserver
+            
             var cproc="web_add_main_button"
             self.info(cproc,"run")
 
@@ -210,3 +211,6 @@ end
 
 # return the module as the output of import, which is eventually replaced by the return value of 'init()'
 return tool 
+#@ solidify:tool.init,weak
+#@ solidify:tool.info,weak
+#@ solidify:tool.warn,weak
