@@ -23,20 +23,24 @@ import json
 import undefined
 
 class TopicNames
+
+    static CcuThermostat = "CCU/thermostat"  
+    static CcuButton = "CCU/button"  # payload : {"ButtonShort":true}
+    static CcuOutside = "CCU/outside"
+
+    static CentralFan = "global/centralFan"
+
+    static ExcessCoordination = "global/controller/excess"
+
      static MeterPowerAVOld = "SM.PowerAV"
-     static MeterPowerAV = "meter/power/average" 
+     static MeterPowerAV = "meter/power/average"    
+     static Mi32Sensors="global/mi32Sensors/temperature"
+
+     static OpenMeteo="global/meteo"
 
      static RoomK1 = "room/K1"
 
-     static CcuThermostat = "CCU/thermostat"  
-     static CcuButton = "CCU/button"
-
-     static ExcessCoordination = "global/controller/excess"
-
-     static CentralFan = "global/centralFan"
-      
-     static Mi32Sensors="global/mi32Sensors/temperature"
-     static OpenMeteo="global/meteo"
+     static Testing = "global/testing"
 end
 
 
@@ -116,9 +120,14 @@ class UdpBroker
         
         # convert message to json and send via UDP broadcast
         var tele = msg.toJson()
-        if self.udp  self.udp.send_multicast(bytes().fromstring(tele)) end
+        if self.udp 
+            self.info(cproc,tele)
+            self.udp.send_multicast(bytes().fromstring(tele))
+        else
+            self.warn(cproc,"udp client not defined")
+            return false
+        end
 
-        self.info(cproc,tele)
         return true
     end
 
@@ -289,7 +298,7 @@ class UdpBroker
 
        self.udp = udp()      
        var result = self.udp.begin_multicast(self.IP, self.PORT)
-       self.info(cproc,"broker started with result:"+str(result)+ " and isRestart="+ str(isRestart))
+       self.warn(cproc,"broker started with result:"+str(result)+ " and isRestart="+ str(isRestart))
 
        if self.onStarted && !isRestart
             try

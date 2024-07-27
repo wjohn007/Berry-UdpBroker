@@ -1,17 +1,20 @@
 #-----------------------------------
 The module 'tool' impelments common functions
 ------------------------------------#
+
 import json
 import string
 import webserver
 import math
 
+#@ solidify:tool
 tool = module("tool")
 
 tool.init = def (m)
 
     class Tool
         static BerryStyle='<style>table.berry {max-width:100%;table-layout: fixed;}table, th,td { border: 1px solid #f4f5f0; text-align: center; border-collapse: collapse;} </style>'
+        static RebootWeekly=false
 
         var lastIsNumberResult
         var lastIsBoolResult
@@ -185,6 +188,20 @@ tool.init = def (m)
             return result
         end        
         
+        # reboots at Sa at 09:00
+        def rebootWeekly()
+            print("will reboot weekly")
+            # seconds minute hour day   month Weekday
+            # 0-59    0-59   0-23 1-30  1-12  0 (So)-6(Sa)
+            tasmota.remove_cron('weeklyRestart')
+
+            tasmota.add_cron("0 0 9 * * 6",
+                def()
+                tasmota.cmd("restart 1")
+                end
+                ,'weeklyRestart') 
+            Tool.RebootWeekly=true
+         end
     end
 
     # return a single instance for this class
