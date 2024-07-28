@@ -21,7 +21,6 @@ udpunsub <topic>            unsubscribe topic
 import string
 import json
 import undefined
-import xtool
 
 #@ solidify:TopicNames
 class TopicNames
