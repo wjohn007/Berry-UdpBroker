@@ -21,6 +21,7 @@ udpunsub <topic>            unsubscribe topic
 import string
 import json
 import undefined
+import xtool
 
 #@ solidify:TopicNames
 class TopicNames
@@ -51,7 +52,7 @@ class UdpTopic
     var isCmd
 end	
 
-#@ solidify:UdpBroker,weak
+#@ solidify:UdpBroker
 class UdpBroker
     
     static PORT = 12233

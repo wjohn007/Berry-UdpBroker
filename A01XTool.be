@@ -18,6 +18,11 @@ class XTool
     var lastWarnInfo
     var rebootWeeklyActivated
 
+    def init()
+        self.infoEnable=false
+        self.rebootWeeklyActivated=false
+    end
+
     def info(proc,info)
         self.lastLogProc = proc
         self.lastLogInfo = info
