@@ -22,38 +22,15 @@ import string
 import json
 import undefined
 
-#@ solidify:TopicNames
-class TopicNames
-
-    static CcuThermostat = "CCU/thermostat"  
-    static CcuButton = "CCU/button"  # payload : {"ButtonShort":true}
-    static CcuOutside = "CCU/outside"
-
-    static CentralFan = "global/centralFan"
-
-    static ExcessCoordination = "global/controller/excess"
-
-     static MeterPowerAVOld = "SM.PowerAV"
-     static MeterPowerAV = "meter/power/average"    
-     static Mi32Sensors="global/mi32Sensors/temperature"
-
-     static OpenMeteo="global/meteo"
-
-     static RoomK1 = "room/K1"
-
-     static Testing = "global/testing"
-end
-
-#@ solidify:UdpTopic
-class UdpTopic
-    var topic
-    var closure
-    var isCmd
-end	
-
 #@ solidify:UdpBroker
 class UdpBroker
-    
+    #-
+    class UdpTopic
+        var topic
+        var closure
+        var isCmd
+    end	
+  -#
     static PORT = 12233
     static IP = "224.3.0.1"
 
@@ -161,7 +138,7 @@ class UdpBroker
             end
         end
 
-        var xtopic = UdpTopic()
+        var xtopic = DynClass()
         xtopic.topic = topic
         xtopic.closure = closure
         xtopic.isCmd = isCmd==true
