@@ -116,7 +116,7 @@ xtool.init = def (m)
     import global
     global.xtool = m
     # return a single instance for this class
-    return XTool()
+    return xtool.XTool()
 end
 
 # return the module as the output of import, which is eventually replaced by the return value of 'init()'
